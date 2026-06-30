@@ -8,7 +8,6 @@ import type {
   Subscription,
   StripeConfig,
   CheckoutSession,
-  Recording,
   SubmitAnswerResult,
 } from '@/types/api';
 import type { DifficultyLevel, InterviewStatus, Plan } from '@/types/enums';
@@ -152,27 +151,4 @@ export const interviews = {
 export const feedback = {
   get: (interviewId: string) =>
     request<FeedbackReport>(`/interviews/${interviewId}/feedback`),
-};
-
-// ─── Recordings ────────────────────────────────────────────────────────────────
-
-export const recordings = {
-  get: (interviewId: string) =>
-    request<Recording | null>(`/interviews/${interviewId}/recording`),
-
-  upload: (interviewId: string, data: string, mimeType: string, duration: number) =>
-    request<Recording>(`/interviews/${interviewId}/recording`, {
-      method: 'POST',
-      body: JSON.stringify({ data, mimeType, duration }),
-    }),
-
-  /** Fetches the recording as a Blob using the bearer token. */
-  download: async (interviewId: string): Promise<Blob> => {
-    const token = getToken();
-    const res = await fetch(`${BASE_URL}/interviews/${interviewId}/recording/download`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) throw new ApiError(res.status, 'Failed to download recording');
-    return res.blob();
-  },
 };

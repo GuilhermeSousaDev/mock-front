@@ -75,7 +75,6 @@ export interface Interview {
   techStacks: Array<{ techStack: TechStack }>;
   questions?: Question[];
   feedback?: FeedbackReport | null;
-  recording?: Recording | null;
   startedAt: string | null;
   endedAt: string | null;
   createdAt: string;
@@ -118,17 +117,6 @@ export interface FeedbackReport {
   improvements: string[];
   nextSteps: string[];
   summary: string;
-  createdAt: string;
-}
-
-// ─── Recording ───────────────────────────────────────────────────────────────
-
-export interface Recording {
-  id: string;
-  interviewId: string;
-  duration: number;
-  sizeBytes: number;
-  mimeType: string;
   createdAt: string;
 }
 

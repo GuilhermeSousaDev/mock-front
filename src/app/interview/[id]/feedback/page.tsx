@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { Download, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { AppNav } from '@/components/app-nav';
 import { Button } from '@/components/ui/button';
 import {
   interviews as interviewsApi,
   feedback as feedbackApi,
-  recordings as recordingsApi,
   ApiError,
 } from '@/lib/api';
 import {
@@ -19,7 +18,6 @@ import {
   scoreToHsl,
   scoreToKey,
   normalizeScore,
-  formatDuration,
 } from '@/lib/utils';
 import type { Interview, FeedbackReport } from '@/types/api';
 
@@ -32,7 +30,6 @@ export default function FeedbackPage() {
   const [interview, setInterview] = useState<Interview | null>(null);
   const [report, setReport] = useState<FeedbackReport | null>(null);
   const [error, setError] = useState('');
-  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -46,23 +43,6 @@ export default function FeedbackPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, id]);
 
-  async function downloadRecording() {
-    setDownloading(true);
-    try {
-      const blob = await recordingsApi.download(id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `interview-${id}.webm`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      setError(t('feedback.downloadError'));
-    } finally {
-      setDownloading(false);
-    }
-  }
-
   if (loading || !user) {
     return (
       <main className="min-h-screen grid place-items-center bg-background">
@@ -75,26 +55,14 @@ export default function FeedbackPage() {
     <main className="min-h-screen bg-background">
       <AppNav user={user} />
       <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t('feedback.title')}</h1>
-            {interview && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {t(`difficulty.${interview.level}`)} ·{' '}
-                {interview.techStacks.map((ts) => ts.techStack.name).join(', ') ||
-                  t('dashboard.general')}
-              </p>
-            )}
-          </div>
-          {interview?.recording && (
-            <Button variant="outline" onClick={downloadRecording} disabled={downloading}>
-              <Download className="h-4 w-4" />
-              {downloading
-                ? t('feedback.preparing')
-                : t('feedback.recording', {
-                    duration: formatDuration(interview.recording.duration),
-                  })}
-            </Button>
+        <header>
+          <h1 className="text-2xl font-bold">{t('feedback.title')}</h1>
+          {interview && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {t(`difficulty.${interview.level}`)} ·{' '}
+              {interview.techStacks.map((ts) => ts.techStack.name).join(', ') ||
+                t('dashboard.general')}
+            </p>
           )}
         </header>
 

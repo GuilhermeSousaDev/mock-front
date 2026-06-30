@@ -8,7 +8,6 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "recordings": "Recordings",
     "subscription": "Subscription"
   },
   "language": {
@@ -19,6 +18,8 @@
   "landing": {
     "signIn": "Sign in",
     "getStarted": "Get started",
+    "navFeatures": "How it works",
+    "navPricing": "Pricing",
     "badge": "AI-powered voice interviews",
     "heroTitle1": "Practice interviews.",
     "heroTitle2": "Get hired with confidence.",
@@ -116,7 +117,15 @@
     "interviewer": "Choose your interviewer",
     "interviewerHint": "Each voice is a different interviewer. Pick who you'll talk to.",
     "noVoices": "No voices detected in this browser — a default system voice will be used.",
-    "preview": "Preview voice"
+    "preview": "Preview voice",
+    "summaryTitle": "Your setup",
+    "summaryHint": "Review your choices, then start.",
+    "summaryLevel": "Level",
+    "summaryQuestions": "Questions",
+    "summaryInterviewer": "Interviewer",
+    "summaryStacks": "Tech",
+    "noStacksYet": "None selected yet",
+    "anyInterviewer": "Default voice"
   },
   "interviewers": {
     "previewLine": "Hi, I'm {{name}}.",
@@ -134,8 +143,7 @@
   "session": {
     "title": "{{level}} interview",
     "question": "Question {{number}}",
-    "introRecord": "The AI interviewer will ask you questions out loud. Answer by voice or by typing. This session will be recorded so you can review it afterwards.",
-    "introNoRecord": "The AI interviewer will ask you questions out loud. Answer by voice or by typing. Session recording is available on Pro and Premium plans.",
+    "intro": "The AI interviewer will ask you questions out loud. Answer by voice or by typing.",
     "begin": "Begin interview",
     "voiceOn": "Voice on",
     "voiceOff": "Voice off",
@@ -149,8 +157,8 @@
     "evaluating": "Evaluating…",
     "endGetFeedback": "End & get feedback",
     "wrappingUp": "Wrapping up your interview…",
-    "wrappingUpDesc": "Saving your recording and generating your feedback report.",
-    "micDenied": "Microphone access was denied — the session will run without a recording.",
+    "wrappingUpDesc": "Generating your feedback report.",
+    "micDenied": "Microphone access was denied — type your answer instead.",
     "dictationUnsupported": "Voice dictation is not supported in this browser — type your answer instead.",
     "dictationNetworkError": "Voice dictation couldn't reach the speech service. Use Google Chrome (other Chromium browsers lack the speech backend) and check your connection, or type your answer instead.",
     "loadError": "Failed to load interview",
@@ -178,23 +186,9 @@
     "improvements": "Areas to improve",
     "nextSteps": "Recommended next steps",
     "practiceAgain": "Practice again",
-    "recording": "Recording ({{duration}})",
-    "preparing": "Preparing…",
     "generating": "Generating your feedback…",
     "notAvailable": "Feedback is not available yet",
-    "noNotes": "No notes.",
-    "downloadError": "Could not download the recording."
-  },
-  "recordings": {
-    "title": "Recordings",
-    "subtitle": "Listen back to your past interview sessions.",
-    "loading": "Loading recordings…",
-    "empty": "No recordings yet. Recorded sessions from your Pro or Premium interviews show up here.",
-    "loadError": "Could not load the recording.",
-    "play": "Play",
-    "loadingAudio": "Loading…",
-    "download": "Download",
-    "general": "General"
+    "noNotes": "No notes."
   },
   "subscription": {
     "title": "Subscription",
@@ -232,7 +226,6 @@
       "features": [
         "Unlimited interviews",
         "Up to 3 tech stacks per interview",
-        "Session recording & download",
         "Structured feedback report"
       ]
     },
@@ -242,7 +235,6 @@
       "features": [
         "Everything in Pro",
         "Unlimited tech stacks per interview",
-        "Session recording & download",
         "Priority interviewer models"
       ]
     }
@@ -254,6 +246,14 @@
     "SENIOR": "Senior",
     "STAFF": "Staff",
     "PRINCIPAL": "Principal"
+  },
+  "difficultyDesc": {
+    "ENTRY": "New to the field or first role",
+    "JUNIOR": "0–2 years; building fundamentals",
+    "MID": "Works independently across the stack",
+    "SENIOR": "Deep expertise; leads complex work",
+    "STAFF": "Drives technical direction across teams",
+    "PRINCIPAL": "Sets strategy at the org level"
   },
   "status": {
     "PENDING": "Not started",

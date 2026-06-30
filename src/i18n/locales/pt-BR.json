@@ -8,7 +8,6 @@
   },
   "nav": {
     "dashboard": "Painel",
-    "recordings": "Gravações",
     "subscription": "Assinatura"
   },
   "language": {
@@ -19,6 +18,8 @@
   "landing": {
     "signIn": "Entrar",
     "getStarted": "Começar",
+    "navFeatures": "Como funciona",
+    "navPricing": "Planos",
     "badge": "Entrevistas por voz com IA",
     "heroTitle1": "Pratique entrevistas.",
     "heroTitle2": "Seja contratado com confiança.",
@@ -116,7 +117,15 @@
     "interviewer": "Escolha seu entrevistador",
     "interviewerHint": "Cada voz é um entrevistador diferente. Escolha com quem você vai conversar.",
     "noVoices": "Nenhuma voz detectada neste navegador — uma voz padrão do sistema será usada.",
-    "preview": "Ouvir voz"
+    "preview": "Ouvir voz",
+    "summaryTitle": "Sua configuração",
+    "summaryHint": "Revise suas escolhas e comece.",
+    "summaryLevel": "Nível",
+    "summaryQuestions": "Perguntas",
+    "summaryInterviewer": "Entrevistador",
+    "summaryStacks": "Tecnologias",
+    "noStacksYet": "Nenhuma selecionada ainda",
+    "anyInterviewer": "Voz padrão"
   },
   "interviewers": {
     "previewLine": "Oi, eu sou {{name}}.",
@@ -134,8 +143,7 @@
   "session": {
     "title": "Entrevista {{level}}",
     "question": "Pergunta {{number}}",
-    "introRecord": "O entrevistador de IA fará perguntas em voz alta. Responda por voz ou digitando. Esta sessão será gravada para você revisar depois.",
-    "introNoRecord": "O entrevistador de IA fará perguntas em voz alta. Responda por voz ou digitando. A gravação da sessão está disponível nos planos Pro e Premium.",
+    "intro": "O entrevistador de IA fará perguntas em voz alta. Responda por voz ou digitando.",
     "begin": "Iniciar entrevista",
     "voiceOn": "Voz ativada",
     "voiceOff": "Voz desativada",
@@ -149,8 +157,8 @@
     "evaluating": "Avaliando…",
     "endGetFeedback": "Encerrar e ver feedback",
     "wrappingUp": "Finalizando sua entrevista…",
-    "wrappingUpDesc": "Salvando sua gravação e gerando seu relatório de feedback.",
-    "micDenied": "O acesso ao microfone foi negado — a sessão seguirá sem gravação.",
+    "wrappingUpDesc": "Gerando seu relatório de feedback.",
+    "micDenied": "O acesso ao microfone foi negado — digite sua resposta.",
     "dictationUnsupported": "O ditado por voz não é suportado neste navegador — digite sua resposta.",
     "dictationNetworkError": "O ditado por voz não conseguiu acessar o serviço de fala. Use o Google Chrome (outros navegadores Chromium não têm o serviço de reconhecimento) e verifique sua conexão, ou digite sua resposta.",
     "loadError": "Falha ao carregar a entrevista",
@@ -178,23 +186,9 @@
     "improvements": "Pontos a melhorar",
     "nextSteps": "Próximos passos recomendados",
     "practiceAgain": "Praticar novamente",
-    "recording": "Gravação ({{duration}})",
-    "preparing": "Preparando…",
     "generating": "Gerando seu feedback…",
     "notAvailable": "O feedback ainda não está disponível",
-    "noNotes": "Sem observações.",
-    "downloadError": "Não foi possível baixar a gravação."
-  },
-  "recordings": {
-    "title": "Gravações",
-    "subtitle": "Ouça novamente suas sessões de entrevista anteriores.",
-    "loading": "Carregando gravações…",
-    "empty": "Nenhuma gravação ainda. Sessões gravadas das suas entrevistas Pro ou Premium aparecem aqui.",
-    "loadError": "Não foi possível carregar a gravação.",
-    "play": "Reproduzir",
-    "loadingAudio": "Carregando…",
-    "download": "Baixar",
-    "general": "Geral"
+    "noNotes": "Sem observações."
   },
   "subscription": {
     "title": "Assinatura",
@@ -232,7 +226,6 @@
       "features": [
         "Entrevistas ilimitadas",
         "Até 3 tecnologias por entrevista",
-        "Gravação e download da sessão",
         "Relatório de feedback estruturado"
       ]
     },
@@ -242,7 +235,6 @@
       "features": [
         "Tudo do Pro",
         "Tecnologias ilimitadas por entrevista",
-        "Gravação e download da sessão",
         "Modelos de entrevistador prioritários"
       ]
     }
@@ -254,6 +246,14 @@
     "SENIOR": "Sênior",
     "STAFF": "Staff",
     "PRINCIPAL": "Principal"
+  },
+  "difficultyDesc": {
+    "ENTRY": "Começando na área ou primeiro emprego",
+    "JUNIOR": "0–2 anos; consolidando fundamentos",
+    "MID": "Atua de forma independente no stack",
+    "SENIOR": "Grande experiência; lidera trabalhos complexos",
+    "STAFF": "Direciona decisões técnicas entre times",
+    "PRINCIPAL": "Define estratégia no nível da organização"
   },
   "status": {
     "PENDING": "Não iniciada",

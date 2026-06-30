@@ -11,7 +11,6 @@ import {
   PhoneOff,
   Send,
   Zap,
-  Circle,
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,22 +18,13 @@ import { AppNav } from '@/components/app-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import {
-  interviews as interviewsApi,
-  recordings as recordingsApi,
-  ApiError,
-} from '@/lib/api';
+import { interviews as interviewsApi, ApiError } from '@/lib/api';
 import {
   buildInterviewers,
   loadInterviewerChoice,
   type Interviewer,
 } from '@/lib/interviewers';
-import {
-  PLAN_DETAILS,
-  InterviewStatus,
-  InterviewPhase,
-  Plan,
-} from '@/types/enums';
+import { InterviewStatus, InterviewPhase } from '@/types/enums';
 import type { Interview, Question, User } from '@/types/api';
 
 type Stage = 'intro' | 'live' | 'finishing';
@@ -144,10 +134,6 @@ export default function InterviewSessionPage() {
   // talking — a hands-free, more realistic interview. Off = manual send.
   const [autoSend, setAutoSend] = useState(false);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  const recordStartRef = useRef<number>(0);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   // Available TTS voices. Populated asynchronously by the browser, so we cache them
   // and refresh on `voiceschanged` rather than calling getVoices() at speak time
@@ -171,10 +157,6 @@ export default function InterviewSessionPage() {
   const silenceTimerRef = useRef<number | null>(null);
   const submitRef = useRef<() => void>(() => {});
   const chatEndRef = useRef<HTMLDivElement | null>(null);
-
-  const canRecord = user
-    ? PLAN_DETAILS[user.subscription?.plan ?? Plan.FREE].canRecord
-    : false;
 
   // ─── Load interview ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -351,54 +333,6 @@ export default function InterviewSessionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, stage]);
 
-  // ─── Recording ─────────────────────────────────────────────────────────────────
-  async function startRecording() {
-    if (!canRecord) return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm')
-        ? 'audio/webm'
-        : '';
-      // Cap the bitrate: speech at 48kbps opus stays clear while keeping even long
-      // interviews well under the API's upload limit (the default bitrate can be 4-5x larger).
-      const recorder = new MediaRecorder(stream, {
-        ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 48000,
-      });
-      chunksRef.current = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      recordStartRef.current = Date.now();
-    } catch {
-      setError(t('session.micDenied'));
-    }
-  }
-
-  function stopRecording(): Promise<{ blob: Blob; duration: number } | null> {
-    return new Promise((resolve) => {
-      const recorder = mediaRecorderRef.current;
-      if (!recorder || recorder.state === 'inactive') {
-        resolve(null);
-        return;
-      }
-      recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, {
-          type: recorder.mimeType || 'audio/webm',
-        });
-        const duration = Math.round(
-          (Date.now() - recordStartRef.current) / 1000,
-        );
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-        resolve({ blob, duration });
-      };
-      recorder.stop();
-    });
-  }
-
   // ─── Voice dictation (fills the answer box) ─────────────────────────────────────
   const stopDictation = useCallback(() => {
     dictatingRef.current = false;
@@ -527,7 +461,6 @@ export default function InterviewSessionPage() {
   // ─── Flow control ────────────────────────────────────────────────────────────
   async function handleBegin() {
     setError('');
-    await startRecording();
     try {
       await interviewsApi.updateStatus(id, InterviewStatus.IN_PROGRESS);
     } catch {
@@ -594,15 +527,6 @@ export default function InterviewSessionPage() {
     setStage('finishing');
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     try {
-      const rec = await stopRecording();
-      if (rec && canRecord && rec.blob.size > 0) {
-        const base64 = await blobToBase64(rec.blob);
-        await recordingsApi
-          .upload(id, base64, rec.blob.type || 'audio/webm', rec.duration)
-          .catch(() => {
-            /* recording upload is best-effort */
-          });
-      }
       await interviewsApi.updateStatus(id, InterviewStatus.COMPLETED);
       router.replace(`/interview/${id}/feedback`);
     } catch (err) {
@@ -624,7 +548,6 @@ export default function InterviewSessionPage() {
     return () => {
       dictatingRef.current = false;
       recognitionRef.current?.stop();
-      streamRef.current?.getTracks().forEach((t) => t.stop());
       if (silenceTimerRef.current) window.clearTimeout(silenceTimerRef.current);
       if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     };
@@ -684,9 +607,7 @@ export default function InterviewSessionPage() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {canRecord
-                  ? t('session.introRecord')
-                  : t('session.introNoRecord')}
+                {t('session.intro')}
               </p>
               <Button size="lg" onClick={handleBegin} className="w-full">
                 <Mic className="h-4 w-4" />
@@ -708,7 +629,6 @@ export default function InterviewSessionPage() {
                 />
                 <UserTile
                   user={user}
-                  recording={!!mediaRecorderRef.current}
                   dictating={dictating}
                   caption={transcript}
                 />
@@ -917,12 +837,10 @@ function InterviewerTile({
 
 function UserTile({
   user,
-  recording,
   dictating,
   caption,
 }: {
   user: User;
-  recording: boolean;
   dictating: boolean;
   caption: string;
 }) {
@@ -932,12 +850,6 @@ function UserTile({
       <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
         {t('session.you')}
       </span>
-      {recording && (
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 text-[11px] font-medium backdrop-blur">
-          <Circle className="h-2.5 w-2.5 fill-rose-500 text-rose-500 animate-pulse" />
-          <span className="text-rose-500 font-medium">REC</span>
-        </span>
-      )}
       <div className="relative">
         <span
           className={cn(
@@ -1062,17 +974,4 @@ function ChatPanel({
       </div>
     </div>
   );
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      // Strip the "data:<mime>;base64," prefix — the API expects raw base64.
-      resolve(result.split(',')[1] ?? '');
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 }

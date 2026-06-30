@@ -36,7 +36,6 @@ export interface PlanDetails {
   interviewsPerMonth: number | null;
   /** Max tech stacks selectable per interview. `null` means unlimited. */
   maxTechStacks: number | null;
-  canRecord: boolean;
   priceLabel: string;
   features: string[];
 }
@@ -45,31 +44,26 @@ export const PLAN_DETAILS: Record<Plan, PlanDetails> = {
   [Plan.FREE]: {
     interviewsPerMonth: 3,
     maxTechStacks: 1,
-    canRecord: false,
     priceLabel: 'Free',
     features: ['3 interviews / month', '1 tech stack per interview', 'Structured feedback report'],
   },
   [Plan.PRO]: {
     interviewsPerMonth: null,
     maxTechStacks: 3,
-    canRecord: true,
     priceLabel: '$19/mo',
     features: [
       'Unlimited interviews',
       'Up to 3 tech stacks per interview',
-      'Session recording & download',
       'Structured feedback report',
     ],
   },
   [Plan.PREMIUM]: {
     interviewsPerMonth: null,
     maxTechStacks: null,
-    canRecord: true,
     priceLabel: '$49/mo',
     features: [
       'Everything in Pro',
       'Unlimited tech stacks per interview',
-      'Session recording & download',
       'Priority interviewer models',
     ],
   },
