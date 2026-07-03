@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { AudioLines, Mic, Brain, BarChart3 } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { useRedirectIfAuthenticated } from '@/hooks/use-auth';
 
 export function AuthShell({
   title,
@@ -17,6 +18,8 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  // A returning visitor with a valid session skips the form entirely.
+  useRedirectIfAuthenticated();
 
   const highlights = [
     { icon: Mic, text: t('landing.feat1Title') },

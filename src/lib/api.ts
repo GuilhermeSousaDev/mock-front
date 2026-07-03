@@ -37,8 +37,19 @@ async function request<T>(
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
 
   if (!res.ok) {
+    // A rejected token is dead weight — drop it so auth checks (and the
+    // landing/login redirects) don't keep retrying a stale session.
+    if (res.status === 401 && token) clearToken();
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new ApiError(res.status, err.message ?? res.statusText);
+    // The API normalises `message` to a string, but guard against other
+    // shapes (proxies, older responses) so users never see "[object Object]".
+    const message =
+      typeof err.message === 'string'
+        ? err.message
+        : Array.isArray(err.message)
+          ? err.message.join('; ')
+          : res.statusText;
+    throw new ApiError(res.status, message);
   }
 
   const body: ApiResponse<T> = await res.json();

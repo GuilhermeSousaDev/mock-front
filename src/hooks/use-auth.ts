@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { users, getToken, ApiError } from '@/lib/api';
+import { users, getToken, clearToken, ApiError } from '@/lib/api';
 import type { User } from '@/types/api';
 
 /**
@@ -23,10 +23,32 @@ export function useAuth() {
       .me()
       .then(setUser)
       .catch((err) => {
-        if (err instanceof ApiError && err.status === 401) router.replace('/login');
+        if (err instanceof ApiError && err.status === 401) {
+          clearToken();
+          router.replace('/login');
+        }
       })
       .finally(() => setLoading(false));
   }, [router]);
 
   return { user, loading };
+}
+
+/**
+ * For public auth pages (/login, /signup): when the stored session is still
+ * valid, skip the form and resume straight into the dashboard.
+ */
+export function useRedirectIfAuthenticated() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!getToken()) return;
+    users
+      .me()
+      .then(() => router.replace('/dashboard'))
+      .catch(() => {
+        // Stale/invalid token — already cleared by the api client on 401;
+        // stay on the form.
+      });
+  }, [router]);
 }

@@ -1,13 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Mic, Brain, BarChart3, Check, Sparkles, AudioLines } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { getToken } from '@/lib/api';
 import { Plan } from '@/types/enums';
 
 export default function LandingPage() {
   const { t } = useTranslation();
+  // Session-aware nav: returning users get a "Dashboard" shortcut instead of
+  // being funnelled through Sign in again. Set in an effect — localStorage is
+  // unavailable during SSR/hydration.
+  const [authed, setAuthed] = useState(false);
+  useEffect(() => {
+    setAuthed(!!getToken());
+  }, []);
 
   const features = [
     { icon: Mic, title: t('landing.feat1Title'), description: t('landing.feat1Desc') },
@@ -55,19 +64,31 @@ export default function LandingPage() {
           {/* Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <LanguageSwitcher className="mr-0.5" />
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            >
-              {t('landing.signIn')}
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90 transition-opacity"
-            >
-              {t('landing.getStarted')}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {authed ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90 transition-opacity"
+              >
+                {t('nav.dashboard')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  {t('landing.signIn')}
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/20 hover:opacity-90 transition-opacity"
+                >
+                  {t('landing.getStarted')}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
