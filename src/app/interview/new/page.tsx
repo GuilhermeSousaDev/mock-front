@@ -153,9 +153,10 @@ export default function NewInterviewPage() {
       <AppNav user={user} />
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
         {/* Hero header */}
-        <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-8">
+        <header className="animate-fade-up relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-8">
+          <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
           <div
-            className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/20 blur-3xl"
+            className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/20 blur-3xl animate-drift"
             aria-hidden
           />
           <div className="relative max-w-xl space-y-2">
@@ -234,10 +235,15 @@ export default function NewInterviewPage() {
                 step={1}
                 value={questionCount}
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
-                className="w-full accent-primary"
+                className="slider"
+                style={
+                  {
+                    '--slider-fill': `${((questionCount - MIN_QUESTION_COUNT) / (MAX_QUESTION_COUNT - MIN_QUESTION_COUNT)) * 100}%`,
+                  } as React.CSSProperties
+                }
                 aria-label={t('newInterview.questionCount')}
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-xs font-medium tabular-nums text-muted-foreground">
                 <span>{MIN_QUESTION_COUNT}</span>
                 <span>{MAX_QUESTION_COUNT}</span>
               </div>
@@ -356,61 +362,74 @@ export default function NewInterviewPage() {
           </div>
 
           {/* Sticky summary / launch panel */}
-          <aside className="lg:sticky lg:top-20">
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-4">
-              <div>
-                <h2 className="font-semibold">{t('newInterview.summaryTitle')}</h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t('newInterview.summaryHint')}
-                </p>
-              </div>
-
-              <dl className="space-y-3 text-sm">
-                <SummaryRow label={t('newInterview.summaryLevel')}>
-                  {t(`difficulty.${level}`)}
-                </SummaryRow>
-                <SummaryRow label={t('newInterview.summaryQuestions')}>{questionCount}</SummaryRow>
-                <SummaryRow label={t('newInterview.summaryInterviewer')}>
-                  {selectedInterviewer?.name ?? t('newInterview.anyInterviewer')}
-                </SummaryRow>
-                <div className="space-y-1.5">
-                  <dt className="text-muted-foreground">{t('newInterview.summaryStacks')}</dt>
-                  <dd>
-                    {selectedStacks.length === 0 ? (
-                      <span className="text-muted-foreground">{t('newInterview.noStacksYet')}</span>
-                    ) : (
-                      <span className="flex flex-wrap gap-1.5">
-                        {selectedStacks.map((s) => (
-                          <span
-                            key={s.id}
-                            className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
-                          >
-                            {s.name}
-                          </span>
-                        ))}
-                      </span>
-                    )}
-                  </dd>
+          <aside className="animate-fade-up delay-2 lg:sticky lg:top-20">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="h-1 bg-gradient-to-r from-primary via-violet-500 to-fuchsia-500" aria-hidden />
+              <div className="space-y-4 p-5">
+                <div>
+                  <h2 className="font-semibold">{t('newInterview.summaryTitle')}</h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t('newInterview.summaryHint')}
+                  </p>
                 </div>
-              </dl>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+                <dl className="space-y-3 text-sm">
+                  <SummaryRow label={t('newInterview.summaryLevel')} done>
+                    {t(`difficulty.${level}`)}
+                  </SummaryRow>
+                  <SummaryRow label={t('newInterview.summaryQuestions')} done>
+                    {questionCount}
+                  </SummaryRow>
+                  <SummaryRow
+                    label={t('newInterview.summaryInterviewer')}
+                    done={!!selectedInterviewer}
+                  >
+                    {selectedInterviewer?.name ?? t('newInterview.anyInterviewer')}
+                  </SummaryRow>
+                  <div className="space-y-1.5">
+                    <dt className="flex items-center gap-1.5 text-muted-foreground">
+                      <SummaryDot done={selectedStacks.length > 0} />
+                      {t('newInterview.summaryStacks')}
+                    </dt>
+                    <dd>
+                      {selectedStacks.length === 0 ? (
+                        <span className="text-muted-foreground">
+                          {t('newInterview.noStacksYet')}
+                        </span>
+                      ) : (
+                        <span className="flex flex-wrap gap-1.5">
+                          {selectedStacks.map((s) => (
+                            <span
+                              key={s.id}
+                              className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                            >
+                              {s.name}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
 
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={handleCreate}
-                disabled={submitting || reachedLimit || selected.length === 0}
-              >
-                {submitting ? t('newInterview.settingUp') : t('newInterview.start')}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Link
-                href="/dashboard"
-                className="block text-center text-sm text-muted-foreground hover:text-foreground"
-              >
-                {t('common.cancel')}
-              </Link>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+
+                <Button
+                  size="lg"
+                  className="w-full shadow-lg shadow-primary/25"
+                  onClick={handleCreate}
+                  disabled={submitting || reachedLimit || selected.length === 0}
+                >
+                  {submitting ? t('newInterview.settingUp') : t('newInterview.start')}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                <Link
+                  href="/dashboard"
+                  className="block text-center text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {t('common.cancel')}
+                </Link>
+              </div>
             </div>
           </aside>
         </div>
@@ -435,17 +454,17 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4">
+    <section className="animate-fade-up rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 transition-colors hover:border-primary/25">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+          <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-violet-500 text-white shadow-md shadow-primary/25">
             {icon}
-            <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+            <span className="absolute -right-1.5 -top-1.5 grid h-[1.125rem] w-[1.125rem] place-items-center rounded-full border-2 border-card bg-foreground text-[10px] font-bold leading-none text-background">
               {step}
             </span>
           </span>
           <div>
-            <h2 className="text-sm font-semibold leading-8">{title}</h2>
+            <h2 className="text-sm font-semibold leading-9">{title}</h2>
             {description && (
               <p className="text-xs text-muted-foreground">{description}</p>
             )}
@@ -458,10 +477,34 @@ function SectionCard({
   );
 }
 
-function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
+/** Small readiness indicator: filled when the step has a value. */
+function SummaryDot({ done }: { done: boolean }) {
+  return (
+    <span
+      className={cn(
+        'inline-block h-1.5 w-1.5 shrink-0 rounded-full transition-colors',
+        done ? 'bg-emerald-500' : 'bg-border',
+      )}
+      aria-hidden
+    />
+  );
+}
+
+function SummaryRow({
+  label,
+  done = false,
+  children,
+}: {
+  label: string;
+  done?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-muted-foreground">{label}</dt>
+      <dt className="flex items-center gap-1.5 text-muted-foreground">
+        <SummaryDot done={done} />
+        {label}
+      </dt>
       <dd className="font-medium text-right">{children}</dd>
     </div>
   );

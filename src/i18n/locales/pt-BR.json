@@ -47,7 +47,10 @@
     "choosePlan": "Começar",
     "finalTitle": "Pronto para mandar bem na próxima entrevista?",
     "finalSubtitle": "Pratique de forma mais inteligente. Sua primeira entrevista é por nossa conta.",
-    "footer": "Mock. Feito para devs que querem evoluir."
+    "footer": "Mock. Feito para devs que querem evoluir.",
+    "demoLive": "Sessão ao vivo",
+    "demoQuestion": "Como você manteria dois serviços consistentes sem transações distribuídas?",
+    "demoAnswer": "Eu iria de arquitetura orientada a eventos — uma tabela outbox publicada numa fila, com consumidores idempotentes para os retries serem seguros…"
   },
   "auth": {
     "loginTitle": "Bem-vindo de volta",

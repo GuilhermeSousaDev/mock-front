@@ -13,12 +13,14 @@ import {
   Mic,
   Brain,
   BarChart3,
+  Calendar,
+  Layers,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { AppNav } from '@/components/app-nav';
 import { Badge } from '@/components/ui/badge';
 import { interviews as interviewsApi } from '@/lib/api';
-import { formatScore, scoreToHsl } from '@/lib/utils';
+import { formatScore, normalizeScore, scoreToHsl } from '@/lib/utils';
 import { PLAN_DETAILS, InterviewStatus, Plan } from '@/types/enums';
 import type { Interview } from '@/types/api';
 
@@ -63,9 +65,14 @@ export default function DashboardPage() {
       <AppNav user={user} />
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
         {/* Hero */}
-        <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-8 sm:p-10">
+        <section className="animate-fade-up relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-8 sm:p-10">
+          <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
           <div
-            className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/20 blur-3xl"
+            className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/20 blur-3xl animate-drift"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -left-20 -bottom-24 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl"
             aria-hidden
           />
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -81,7 +88,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/interview/new"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02] hover:opacity-95"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] hover:opacity-95"
             >
               <Plus className="h-5 w-5" />
               {t('dashboard.startCta')}
@@ -92,31 +99,39 @@ export default function DashboardPage() {
         {/* Stats */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCard
+            className="animate-fade-up delay-1"
             icon={<CheckCircle2 className="h-4 w-4" />}
+            tile="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             label={t('dashboard.statTotal')}
             value={String(completedCount)}
           />
           <StatCard
+            className="animate-fade-up delay-2"
             icon={<TrendingUp className="h-4 w-4" />}
+            tile="bg-sky-500/10 text-sky-600 dark:text-sky-400"
             label={t('dashboard.statAvg')}
             value={avgScore !== null ? formatScore(avgScore) : t('dashboard.noScore')}
             color={avgScore !== null ? scoreToHsl(avgScore) : undefined}
           />
           <StatCard
+            className="animate-fade-up delay-3"
             icon={<Trophy className="h-4 w-4" />}
+            tile="bg-amber-500/10 text-amber-600 dark:text-amber-400"
             label={t('dashboard.statBest')}
             value={bestScore !== null ? formatScore(bestScore) : t('dashboard.noScore')}
             color={bestScore !== null ? scoreToHsl(bestScore) : undefined}
           />
           <StatCard
+            className="animate-fade-up delay-4"
             icon={<Sparkles className="h-4 w-4" />}
+            tile="bg-primary/10 text-primary"
             label={t('dashboard.statPlan')}
             value={t(`plans.${plan}.name`)}
           />
         </section>
 
         {/* Plan usage */}
-        <section className="rounded-2xl border border-border bg-card p-5">
+        <section className="animate-fade-up delay-4 rounded-2xl border border-border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium">
@@ -147,13 +162,24 @@ export default function DashboardPage() {
             )}
           </div>
           {limit !== null && (
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  reachedLimit ? 'bg-destructive' : 'bg-primary'
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    reachedLimit
+                      ? 'bg-destructive'
+                      : 'bg-gradient-to-r from-primary/70 to-primary'
+                  }`}
+                  style={{ width: `${usagePct}%` }}
+                />
+              </div>
+              <span
+                className={`text-xs font-semibold tabular-nums ${
+                  reachedLimit ? 'text-destructive' : 'text-muted-foreground'
                 }`}
-                style={{ width: `${usagePct}%` }}
-              />
+              >
+                {usagePct}%
+              </span>
             </div>
           )}
         </section>
@@ -175,35 +201,36 @@ export default function DashboardPage() {
               {list.map((iv) => {
                 const done = iv.status === InterviewStatus.COMPLETED;
                 const href = done ? `/interview/${iv.id}/feedback` : `/interview/${iv.id}`;
+                const stackNames =
+                  iv.techStacks.map((ts) => ts.techStack.name).join(', ') ||
+                  t('dashboard.general');
                 return (
                   <li key={iv.id}>
                     <Link
                       href={href}
-                      className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/50"
+                      className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{t(`difficulty.${iv.level}`)}</span>
-                          <Badge variant={done ? 'success' : 'secondary'}>
-                            {t(`status.${iv.status}`)}
-                          </Badge>
+                      <div className="flex min-w-0 items-center gap-4">
+                        <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground sm:grid">
+                          <Layers className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{t(`difficulty.${iv.level}`)}</span>
+                            <Badge variant={done ? 'success' : 'secondary'}>
+                              {t(`status.${iv.status}`)}
+                            </Badge>
+                          </div>
+                          <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
+                            <span className="truncate">{stackNames}</span>
+                            <span aria-hidden>·</span>
+                            <Calendar className="h-3.5 w-3.5 shrink-0" />
+                            {new Date(iv.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {iv.techStacks.map((ts) => ts.techStack.name).join(', ') ||
-                            t('dashboard.general')}
-                          {' · '}
-                          {new Date(iv.createdAt).toLocaleDateString()}
-                        </p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        {iv.feedback && (
-                          <span
-                            className="text-sm font-semibold"
-                            style={{ color: scoreToHsl(iv.feedback.overallScore) }}
-                          >
-                            {formatScore(iv.feedback.overallScore)}
-                          </span>
-                        )}
+                      <div className="flex shrink-0 items-center gap-3">
+                        {iv.feedback && <ScoreRing score={iv.feedback.overallScore} />}
                         <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
                       </div>
                     </Link>
@@ -218,24 +245,71 @@ export default function DashboardPage() {
   );
 }
 
+/** Compact circular gauge for a 0–10 feedback score, hue-mapped like the stats. */
+function ScoreRing({ score }: { score: number }) {
+  const r = 17;
+  const c = 2 * Math.PI * r;
+  const frac = normalizeScore(score);
+  const color = scoreToHsl(score);
+  return (
+    <span className="relative grid h-11 w-11 place-items-center" title={formatScore(score)}>
+      <svg viewBox="0 0 44 44" className="h-11 w-11 -rotate-90">
+        <circle
+          cx="22"
+          cy="22"
+          r={r}
+          fill="none"
+          strokeWidth="4"
+          className="stroke-muted"
+        />
+        <circle
+          cx="22"
+          cy="22"
+          r={r}
+          fill="none"
+          strokeWidth="4"
+          strokeLinecap="round"
+          stroke={color}
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - frac)}
+        />
+      </svg>
+      <span
+        className="absolute text-[10px] font-bold tabular-nums"
+        style={{ color }}
+      >
+        {Math.round(frac * 100)}
+      </span>
+    </span>
+  );
+}
+
 function StatCard({
   icon,
+  tile,
   label,
   value,
   color,
+  className,
 }: {
   icon: React.ReactNode;
+  tile: string;
   label: string;
   value: string;
   color?: string;
+  className?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <span className="text-xs font-medium">{label}</span>
+    <div
+      className={`rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 ${className ?? ''}`}
+    >
+      <div className="flex items-center gap-2.5">
+        <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${tile}`}>
+          {icon}
+        </span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold tracking-tight" style={color ? { color } : undefined}>
+      <p className="mt-3 text-2xl font-bold tracking-tight" style={color ? { color } : undefined}>
         {value}
       </p>
     </div>
@@ -250,29 +324,32 @@ function EmptyState({ t }: { t: (key: string) => string }) {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-card p-8 text-center sm:p-12">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-        <Sparkles className="h-7 w-7 text-primary" />
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-card p-8 text-center sm:p-12">
+      <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
+      <div className="relative">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <Sparkles className="h-7 w-7 text-primary" />
+        </div>
+        <h3 className="mt-5 text-xl font-semibold">{t('dashboard.noInterviewsTitle')}</h3>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+          {t('dashboard.noInterviewsDesc')}
+        </p>
+        <ul className="mx-auto mt-6 flex max-w-md flex-col gap-3 text-left sm:flex-row sm:justify-center sm:gap-6">
+          {bullets.map(({ icon: Icon, text }) => (
+            <li key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Icon className="h-4 w-4 shrink-0 text-primary" />
+              {text}
+            </li>
+          ))}
+        </ul>
+        <Link
+          href="/interview/new"
+          className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] hover:opacity-95"
+        >
+          <Plus className="h-5 w-5" />
+          {t('dashboard.startCta')}
+        </Link>
       </div>
-      <h3 className="mt-5 text-xl font-semibold">{t('dashboard.noInterviewsTitle')}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-        {t('dashboard.noInterviewsDesc')}
-      </p>
-      <ul className="mx-auto mt-6 flex max-w-md flex-col gap-3 text-left sm:flex-row sm:justify-center sm:gap-6">
-        {bullets.map(({ icon: Icon, text }) => (
-          <li key={text} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Icon className="h-4 w-4 shrink-0 text-primary" />
-            {text}
-          </li>
-        ))}
-      </ul>
-      <Link
-        href="/interview/new"
-        className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02] hover:opacity-95"
-      >
-        <Plus className="h-5 w-5" />
-        {t('dashboard.startCta')}
-      </Link>
     </div>
   );
 }

@@ -47,7 +47,10 @@
     "choosePlan": "Get started",
     "finalTitle": "Ready to ace your next interview?",
     "finalSubtitle": "Practice smarter, not harder. Your first interview is on us.",
-    "footer": "Mock. Built for developers who want to get better."
+    "footer": "Mock. Built for developers who want to get better.",
+    "demoLive": "Live session",
+    "demoQuestion": "How would you keep two services consistent without distributed transactions?",
+    "demoAnswer": "I'd go event-driven — an outbox table published to a queue, with idempotent consumers so retries are safe…"
   },
   "auth": {
     "loginTitle": "Welcome back",

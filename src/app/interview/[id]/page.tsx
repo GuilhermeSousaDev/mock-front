@@ -574,26 +574,44 @@ export default function InterviewSessionPage() {
     <main className="h-screen overflow-hidden bg-background flex flex-col">
       <AppNav user={user} />
       <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-0">
-        <header className="flex items-center justify-between mb-5">
-          <div>
-            <h1 className="text-xl font-bold">
-              {t('session.title', {
-                level: t(`difficulty.${interview.level}`),
-              })}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {stackNames || t('dashboard.general')}
-            </p>
+        <header className="mb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold">
+                {t('session.title', {
+                  level: t(`difficulty.${interview.level}`),
+                })}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {stackNames || t('dashboard.general')}
+              </p>
+            </div>
+            <Badge variant="secondary">
+              {t('session.question', { number: answeredCount + 1 })}
+            </Badge>
           </div>
-          <Badge variant="secondary">
-            {t('session.question', { number: answeredCount + 1 })}
-          </Badge>
+          {/* Session progress (answered / planned questions) */}
+          {stage !== 'intro' && interview.questionCount > 0 && (
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-700"
+                style={{
+                  width: `${Math.min(100, Math.round((answeredCount / interview.questionCount) * 100))}%`,
+                }}
+              />
+            </div>
+          )}
         </header>
 
         {stage === 'intro' && (
           <div className="flex flex-1 items-center justify-center">
-            <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center space-y-6">
-              <div className="flex flex-col items-center gap-3">
+            <div className="animate-fade-up relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-8 text-center space-y-6">
+              <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
+              <div
+                className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/15 blur-3xl"
+                aria-hidden
+              />
+              <div className="relative flex flex-col items-center gap-3">
                 <InterviewerAvatar interviewer={interviewer} size="lg" />
                 <div>
                   <p className="font-semibold text-lg">
@@ -606,10 +624,14 @@ export default function InterviewSessionPage() {
                   )}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="relative text-sm text-muted-foreground leading-relaxed">
                 {t('session.intro')}
               </p>
-              <Button size="lg" onClick={handleBegin} className="w-full">
+              <Button
+                size="lg"
+                onClick={handleBegin}
+                className="relative w-full shadow-lg shadow-primary/25"
+              >
                 <Mic className="h-4 w-4" />
                 {t('session.begin')}
               </Button>
@@ -635,7 +657,7 @@ export default function InterviewSessionPage() {
               </div>
 
               {/* Control bar */}
-              <div className="flex items-center justify-center gap-2 sm:gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+              <div className="mx-auto flex w-fit items-center justify-center gap-2 sm:gap-3 rounded-full border border-border bg-card/90 px-4 py-3 shadow-lg shadow-primary/5 backdrop-blur">
                 <button
                   type="button"
                   onClick={toggleDictation}
@@ -766,11 +788,11 @@ function InterviewerAvatar({
 function SoundBars() {
   return (
     <span className="inline-flex items-end gap-0.5 h-3" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
+      {[0, 1, 2, 3, 4].map((i) => (
         <span
           key={i}
-          className="w-0.5 rounded-full bg-primary animate-pulse"
-          style={{ height: `${[40, 100, 70, 90][i]}%`, animationDelay: `${i * 120}ms` }}
+          className="w-0.5 rounded-full bg-primary animate-sound-bar"
+          style={{ height: `${[50, 100, 70, 90, 60][i]}%`, animationDelay: `${i * 130}ms` }}
         />
       ))}
     </span>
@@ -795,7 +817,20 @@ function InterviewerTile({
       ? t('session.thinking')
       : t('session.listening');
   return (
-    <div className="relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-6">
+    <div
+      className={cn(
+        'relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border bg-card p-6 transition-colors',
+        speaking ? 'border-primary/50' : 'border-border',
+      )}
+    >
+      {/* Faint wash of the interviewer's own avatar gradient. */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-[0.08]',
+          interviewer?.gradient ?? 'from-slate-500 to-slate-700',
+        )}
+        aria-hidden
+      />
       <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
         <Sparkles className="h-3 w-3 text-primary" />
         {t('session.interviewer')}
@@ -813,6 +848,12 @@ function InterviewerTile({
             speaking ? 'opacity-100 animate-pulse' : 'opacity-0',
           )}
         />
+        {speaking && (
+          <span
+            className="absolute -inset-1.5 animate-ping rounded-full border-2 border-primary/50"
+            aria-hidden
+          />
+        )}
         <span className="relative">
           <InterviewerAvatar interviewer={interviewer} size="lg" ring={speaking} />
         </span>
@@ -846,7 +887,19 @@ function UserTile({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-6">
+    <div
+      className={cn(
+        'relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border bg-card p-6 transition-colors',
+        dictating ? 'border-emerald-500/50' : 'border-border',
+      )}
+    >
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 transition-opacity',
+          dictating ? 'opacity-[0.08]' : 'opacity-0',
+        )}
+        aria-hidden
+      />
       <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/70 px-2 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
         {t('session.you')}
       </span>
@@ -920,7 +973,11 @@ function ChatPanel({
   const { t } = useTranslation();
   return (
     <div className="flex min-h-[24rem] flex-col rounded-2xl border border-border bg-card lg:min-h-0">
-      <div className="border-b border-border px-4 py-3">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <span className="relative flex h-2 w-2" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+        </span>
         <h2 className="text-sm font-semibold">{t('session.transcriptTitle')}</h2>
       </div>
       <div className="scrollbar-thin min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
@@ -931,15 +988,15 @@ function ChatPanel({
         ) : (
           messages.map((m) =>
             m.role === 'interviewer' ? (
-              <div key={m.id} className="flex items-start gap-2">
+              <div key={m.id} className="animate-fade-in flex items-start gap-2">
                 <InterviewerAvatar interviewer={interviewer} size="md" />
                 <div className="rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm leading-relaxed">
                   {m.text}
                 </div>
               </div>
             ) : (
-              <div key={m.id} className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm leading-relaxed text-primary-foreground">
+              <div key={m.id} className="animate-fade-in flex justify-end">
+                <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-gradient-to-br from-primary to-violet-500 px-3 py-2 text-sm leading-relaxed text-primary-foreground shadow-sm">
                   {m.text}
                 </div>
               </div>

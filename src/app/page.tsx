@@ -3,10 +3,102 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Mic, Brain, BarChart3, Check, Sparkles, AudioLines } from 'lucide-react';
+import {
+  ArrowRight,
+  Mic,
+  Brain,
+  BarChart3,
+  Check,
+  Sparkles,
+  AudioLines,
+} from 'lucide-react';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { getToken } from '@/lib/api';
 import { Plan } from '@/types/enums';
+
+function SoundBars({ className = 'bg-primary' }: { className?: string }) {
+  return (
+    <span className="inline-flex h-3.5 items-end gap-0.5" aria-hidden>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span
+          key={i}
+          className={`animate-sound-bar w-0.5 rounded-full ${className}`}
+          style={{ height: `${[55, 100, 70, 90, 60][i]}%`, animationDelay: `${i * 130}ms` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+/** Mock live-session card shown in the hero — a picture of the product itself. */
+function SessionPreview() {
+  const { t } = useTranslation();
+  return (
+    <div className="relative animate-fade-up delay-2">
+      {/* Glow behind the card */}
+      <div
+        className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-primary/25 via-fuchsia-500/10 to-transparent blur-2xl"
+        aria-hidden
+      />
+      <div className="relative rounded-2xl border border-border bg-card/95 shadow-xl shadow-primary/10 backdrop-blur">
+        {/* Window bar */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            {t('landing.demoLive')}
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+            {t('session.question', { number: 4 })}
+          </span>
+        </div>
+
+        <div className="space-y-4 px-4 py-5">
+          {/* Interviewer turn */}
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-500 text-sm font-semibold text-white">
+              A
+            </span>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Alex</span>
+                <SoundBars />
+                <span>{t('session.interviewerSpeaking')}</span>
+              </div>
+              <p className="rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed">
+                {t('landing.demoQuestion')}
+              </p>
+            </div>
+          </div>
+
+          {/* Candidate turn */}
+          <div className="flex justify-end">
+            <div className="max-w-[85%] space-y-1.5 text-right">
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Mic className="h-3 w-3 text-emerald-500" />
+                {t('session.you')}
+              </span>
+              <p className="rounded-2xl rounded-tr-sm bg-primary px-3.5 py-2.5 text-left text-sm leading-relaxed text-primary-foreground">
+                {t('landing.demoAnswer')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Score footer */}
+        <div className="flex items-center justify-between border-t border-border px-4 py-3">
+          <span className="text-xs text-muted-foreground">{t('dashboard.statAvg')}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <BarChart3 className="h-3.5 w-3.5" />
+            92% · {t('score.excellent')}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { t } = useTranslation();
@@ -19,9 +111,24 @@ export default function LandingPage() {
   }, []);
 
   const features = [
-    { icon: Mic, title: t('landing.feat1Title'), description: t('landing.feat1Desc') },
-    { icon: Brain, title: t('landing.feat2Title'), description: t('landing.feat2Desc') },
-    { icon: BarChart3, title: t('landing.feat3Title'), description: t('landing.feat3Desc') },
+    {
+      icon: Mic,
+      title: t('landing.feat1Title'),
+      description: t('landing.feat1Desc'),
+      tile: 'from-sky-500 to-indigo-500',
+    },
+    {
+      icon: Brain,
+      title: t('landing.feat2Title'),
+      description: t('landing.feat2Desc'),
+      tile: 'from-violet-500 to-fuchsia-500',
+    },
+    {
+      icon: BarChart3,
+      title: t('landing.feat3Title'),
+      description: t('landing.feat3Desc'),
+      tile: 'from-emerald-500 to-teal-500',
+    },
   ];
 
   const stats = [
@@ -95,46 +202,58 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
         <div
-          className="pointer-events-none absolute left-1/2 top-[-10rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl"
+          className="pointer-events-none absolute -top-40 left-1/4 h-[30rem] w-[30rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl animate-drift"
           aria-hidden
         />
-        <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-            </span>
-            {t('landing.badge')}
+        <div
+          className="pointer-events-none absolute -top-20 right-0 h-[24rem] w-[24rem] translate-x-1/3 rounded-full bg-fuchsia-500/10 blur-3xl"
+          aria-hidden
+        />
+
+        <div className="relative max-w-6xl mx-auto grid items-center gap-14 px-6 pt-20 pb-20 lg:grid-cols-2 lg:gap-10 lg:pt-24">
+          <div className="text-center lg:text-left">
+            <div className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+              </span>
+              {t('landing.badge')}
+            </div>
+
+            <h1 className="animate-fade-up delay-1 text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-6 text-balance">
+              {t('landing.heroTitle1')}
+              <br />
+              <span className="text-gradient">{t('landing.heroTitle2')}</span>
+            </h1>
+            <p className="animate-fade-up delay-2 text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-10 text-balance">
+              {t('landing.heroSubtitle')}
+            </p>
+
+            <div className="animate-fade-up delay-3 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] hover:opacity-95"
+              >
+                {t('landing.ctaStart')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background/60 px-8 py-3.5 text-base font-medium backdrop-blur hover:bg-muted transition-colors"
+              >
+                {t('landing.ctaHow')}
+              </Link>
+            </div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-6 text-balance">
-            {t('landing.heroTitle1')}
-            <br />
-            <span className="text-primary">{t('landing.heroTitle2')}</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 text-balance">
-            {t('landing.heroSubtitle')}
-          </p>
+          <SessionPreview />
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02] hover:opacity-95"
-            >
-              {t('landing.ctaStart')}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-8 py-3.5 text-base font-medium hover:bg-muted transition-colors"
-            >
-              {t('landing.ctaHow')}
-            </Link>
-          </div>
-
-          {/* Stats strip */}
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border">
+        {/* Stats strip */}
+        <div className="relative max-w-6xl mx-auto px-6 pb-20">
+          <div className="animate-fade-up delay-3 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border bg-border shadow-sm">
             {stats.map(({ value, label }) => (
               <div key={label} className="bg-card px-6 py-6">
                 <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
@@ -152,17 +271,24 @@ export default function LandingPage() {
           <h2 className="mt-2 text-3xl font-bold">{t('landing.howTitle')}</h2>
           <p className="mt-3 text-muted-foreground">{t('landing.stepsSubtitle')}</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map(({ icon: Icon, title, description }, i) => (
+        <div className="relative grid md:grid-cols-3 gap-8">
+          {/* Connector between the step cards (desktop) */}
+          <div
+            className="pointer-events-none absolute left-[12%] right-[12%] top-14 hidden border-t-2 border-dashed border-border md:block"
+            aria-hidden
+          />
+          {features.map(({ icon: Icon, title, description, tile }, i) => (
             <div
               key={title}
-              className="relative rounded-2xl border border-border bg-card p-8 flex flex-col gap-4 transition-colors hover:border-primary/40"
+              className="group relative rounded-2xl border border-border bg-card p-8 flex flex-col gap-4 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
             >
-              <span className="absolute right-6 top-6 text-sm font-semibold text-muted-foreground/50">
+              <span className="absolute right-6 top-6 text-3xl font-bold tracking-tight text-muted-foreground/20 transition-colors group-hover:text-primary/30">
                 0{i + 1}
               </span>
-              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                <Icon className="h-5 w-5 text-accent-foreground" />
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md transition-transform group-hover:scale-110 ${tile}`}
+              >
+                <Icon className="h-5 w-5" />
               </div>
               <h3 className="font-semibold text-lg">{title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
@@ -184,17 +310,25 @@ export default function LandingPage() {
             return (
               <div
                 key={plan}
-                className={`relative rounded-2xl border bg-card p-8 flex flex-col gap-6 ${
-                  popular ? 'border-primary shadow-lg shadow-primary/10 md:-mt-2' : 'border-border'
+                className={`relative rounded-2xl border bg-card p-8 flex flex-col gap-6 transition-all ${
+                  popular
+                    ? 'border-primary shadow-xl shadow-primary/15 md:-mt-3 md:mb-3 ring-1 ring-primary/30'
+                    : 'border-border hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md'
                 }`}
               >
                 {popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                    <Sparkles className="h-3 w-3" />
-                    {t('landing.popular')}
-                  </span>
+                  <>
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-0 h-24 rounded-t-2xl bg-gradient-to-b from-primary/10 to-transparent"
+                      aria-hidden
+                    />
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/30">
+                      <Sparkles className="h-3 w-3" />
+                      {t('landing.popular')}
+                    </span>
+                  </>
                 )}
-                <div>
+                <div className="relative">
                   <h3 className="font-semibold text-lg">{t(`plans.${plan}.name`)}</h3>
                   <p className="mt-2 text-3xl font-bold tracking-tight">
                     {t(`plans.${plan}.price`)}
@@ -202,8 +336,8 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3">
                   {featureList.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                    <li key={feature} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span className="text-muted-foreground">{feature}</span>
                     </li>
                   ))}
@@ -212,7 +346,7 @@ export default function LandingPage() {
                   href="/signup"
                   className={`mt-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 ${
                     popular
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
                       : 'border border-border hover:bg-muted'
                   }`}
                 >
@@ -227,8 +361,13 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
         <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card px-8 py-16 text-center">
+          <div className="pointer-events-none absolute inset-0 bg-grid-faint" aria-hidden />
           <div
-            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl"
+            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl animate-drift"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -left-24 -bottom-24 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl"
             aria-hidden
           />
           <div className="relative">
@@ -240,7 +379,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/signup"
-              className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.02] hover:opacity-95"
+              className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] hover:opacity-95"
             >
               {t('landing.ctaStart')}
               <ArrowRight className="h-4 w-4" />
