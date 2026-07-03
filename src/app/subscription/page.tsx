@@ -130,8 +130,6 @@ export default function SubscriptionPage() {
           })}
         </div>
 
-        <p className="text-xs text-muted-foreground">{t('subscription.testCardNote')}</p>
-
         <button
           onClick={() => router.push('/dashboard')}
           className="text-sm text-muted-foreground hover:text-foreground"

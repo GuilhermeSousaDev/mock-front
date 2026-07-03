@@ -207,8 +207,7 @@
     "cancel": "Cancelar",
     "securedByStripe": "Pagamentos processados com segurança pela Stripe.",
     "paymentSuccess": "Pagamento aprovado — você agora está no plano {{plan}}!",
-    "paymentError": "Não foi possível concluir o pagamento. Tente novamente.",
-    "testCardNote": "Modo de teste da Stripe: pague com o cartão 4242 4242 4242 4242, validade futura, qualquer CVC e CEP."
+    "paymentError": "Não foi possível concluir o pagamento. Tente novamente."
   },
   "plans": {
     "FREE": {

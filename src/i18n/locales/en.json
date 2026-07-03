@@ -207,8 +207,7 @@
     "cancel": "Cancel",
     "securedByStripe": "Payments are securely processed by Stripe.",
     "paymentSuccess": "Payment successful — you're now on the {{plan}} plan!",
-    "paymentError": "Payment could not be completed. Please try again.",
-    "testCardNote": "Stripe test mode: pay with card 4242 4242 4242 4242, any future expiry, any CVC and ZIP."
+    "paymentError": "Payment could not be completed. Please try again."
   },
   "plans": {
     "FREE": {
